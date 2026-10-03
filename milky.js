@@ -1,0 +1,490 @@
+/* Milky UI - load this from jsDelivr with a plain <script src> tag. */
+(() => {
+  const css = `
+:root{color-scheme:dark;--p:rgba(27,31,38,.6);--p2:rgba(21,24,29,.55);--line:rgba(255,255,255,.1);--text:#f5f7fa;--muted:#aab2bd}
+*{box-sizing:border-box}
+body{margin:0;height:100vh;display:flex;flex-direction:column;overflow:hidden;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+background:#0b0d10}
+button,select,input{font:inherit;color:var(--text)}
+button{cursor:pointer}
+.svg{display:inline-flex;align-items:center;justify-content:center}
+svg{display:block}
+.hid{display:none}
+.tabbar,.addrbar{flex:none}
+.scroller{flex:1;min-height:0;overflow:auto;position:relative;z-index:1}
+#frames{flex:1;min-height:0;position:relative;z-index:1;display:none}
+body.site .scroller{display:none}
+body.site #frames{display:block}
+#frames iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0b0d10;display:none}
+#frames iframe.on{display:block}
+
+.tabbar{display:flex;align-items:flex-end;gap:4px;padding:8px 10px 0;background:rgba(8,9,12,.55);backdrop-filter:blur(14px);overflow-x:auto}
+.tab{display:flex;align-items:center;gap:8px;min-width:120px;max-width:190px;padding:9px 8px 9px 12px;border-radius:12px 12px 0 0;background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;white-space:nowrap;cursor:pointer}
+.tab.active{background:var(--p);color:var(--text)}
+.tab .t{flex:1;overflow:hidden;text-overflow:ellipsis}
+.tab .x{border:0;background:none;color:inherit;border-radius:50%;width:20px;height:20px;display:grid;place-items:center;padding:0}
+.tab .x:hover,.newtab:hover{background:rgba(255,255,255,.12)}
+.newtab{border:0;background:none;color:var(--muted);width:32px;height:32px;border-radius:50%;margin-bottom:3px;display:grid;place-items:center}
+.addrbar{padding:8px 12px;background:var(--p);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.addr,.search,.gin,.gsel{background:rgba(10,12,16,.5);border:1px solid var(--line);color:var(--text);outline:none;backdrop-filter:blur(10px)}
+.addr{display:block;width:100%;max-width:760px;margin:auto;border-radius:999px;padding:9px 18px;font-size:13px}
+.addr:focus,.search:focus,.gin:focus,.gsel:focus{border-color:rgba(255,255,255,.35)}
+
+.wrap{max-width:1050px;margin:auto;padding:26px 18px 50px}
+.hero{text-align:center;padding:46px 0 10px}
+.logo{width:64px;height:64px;margin:0 auto 14px;border-radius:20px;background:rgba(0,0,0,.6);display:grid;place-items:center;border:1px solid var(--line)}
+.hero h1{font-size:clamp(42px,8vw,76px);line-height:.95;margin:0 0 14px;letter-spacing:-4px}
+.hero p{color:var(--muted);margin:0 0 30px;min-height:1.2em}
+.search{display:block;width:100%;max-width:640px;margin:auto;border-radius:999px;padding:17px 24px;font-size:15px;box-shadow:0 25px 70px rgba(0,0,0,.5)}
+.tiles{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;max-width:700px;margin:32px auto 0}
+.tile{width:84px;background:none;border:0;padding:0;text-align:center;color:var(--muted);font-size:12px}
+.tile .ic{width:60px;height:60px;margin:0 auto 8px;border-radius:18px;background:var(--p);border:1px solid var(--line);backdrop-filter:blur(10px);display:grid;place-items:center;color:var(--text);transition:.15s}
+.tile:hover .ic{background:rgba(255,255,255,.14);transform:translateY(-2px)}
+.tile span.l{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile.add .ic{border-style:dashed}
+
+.page h2{display:flex;align-items:center;gap:10px;font-size:28px;margin:10px 0 4px;letter-spacing:-1px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+.sect{margin:26px 0 10px;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{display:flex;align-items:center;gap:12px;text-align:left;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--p);backdrop-filter:blur(10px);transition:.15s}
+.card:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px)}
+.card img,.card .svg{width:28px;height:28px;border-radius:6px;flex:none}
+.card b{display:block;font-size:14px}
+.card small{color:var(--muted);font-size:11px}
+
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.gin{flex:1;min-width:180px;border-radius:14px;padding:12px 16px;font-size:14px}
+.gsel{border-radius:14px;padding:12px 14px;font-size:14px}
+.gsel option{background:#15181d}
+.rnd{display:flex;align-items:center;gap:8px;padding:12px 18px;border-radius:14px;border:1px solid var(--line);background:rgba(244,241,232,.9);color:#17191d;font-weight:700}
+.rnd:hover{filter:brightness(1.06)}
+.games{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+.gt{position:relative;aspect-ratio:1;border-radius:18px;border:1px solid var(--line);background:var(--p);backdrop-filter:blur(10px);overflow:hidden;display:grid;place-items:center;padding:0}
+.gt img{width:44%;height:44%;object-fit:contain}
+.gt .nm{position:absolute;inset:0;display:flex;align-items:flex-end;padding:10px;background:linear-gradient(to top,#000,transparent);opacity:0;transition:.2s;font-size:13px;font-weight:700;text-align:left;color:#fff}
+.gt:hover .nm{opacity:1}
+.empty{color:var(--muted);font-size:14px;padding:30px 0}
+/* animated background */
+.bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;animation:hue 30s linear infinite}
+.tabbar,.addrbar,.wrap{position:relative;z-index:1}
+.bg i{position:absolute;width:45vmax;height:45vmax;border-radius:50%;filter:blur(80px);opacity:.6;animation:drift 10s ease-in-out infinite alternate}
+.bg i:nth-child(1){background:#3f5a8a;top:-15vmax;left:-10vmax}
+.bg i:nth-child(2){background:#3d7a5f;bottom:-20vmax;right:-10vmax;animation-name:drift2;animation-duration:13s;animation-delay:-4s}
+.bg i:nth-child(3){background:#8a5a3f;top:30%;left:35%;width:32vmax;height:32vmax;animation-duration:9s;animation-delay:-6s}
+.bg i:nth-child(4){background:#7a3f8a;top:-10vmax;right:5vmax;width:30vmax;height:30vmax;animation-name:drift2;animation-duration:12s;animation-delay:-2s}
+.bg i:nth-child(5){background:#3f8a8a;bottom:-10vmax;left:10vmax;width:34vmax;height:34vmax;animation-duration:11s;animation-delay:-8s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(25vmax,15vmax) scale(1.3)}100%{transform:translate(-15vmax,25vmax) scale(.8)}}
+@keyframes drift2{0%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-25vmax,-12vmax) scale(.8)}100%{transform:translate(18vmax,-20vmax) scale(1.3)}}
+@keyframes hue{to{filter:hue-rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.bg,.bg i{animation:none}}
+.addrbar{display:flex;align-items:center;justify-content:center;gap:6px}
+.addr{flex:1;width:auto;margin:0}
+.nb{border:0;background:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--text)}
+.nb:hover:not(:disabled){background:rgba(255,255,255,.12)}
+.nb:disabled{opacity:.3;cursor:default}
+@media(max-width:600px){.hero h1{letter-spacing:-2px}}
+`;
+  const style = document.createElement("style");
+  style.textContent = css;
+  document.head.append(style);
+
+  document.title = "Milky";
+  document.body.innerHTML = `
+<div class="bg"><i></i><i></i><i></i><i></i><i></i></div>
+<div class="tabbar" id="tabbar"></div>
+<div class="addrbar">
+  <button class="nb" id="nb-back" title="Back"></button>
+  <button class="nb" id="nb-forward" title="Forward"></button>
+  <button class="nb" id="nb-reload" title="Reload"></button>
+  <input id="addr" class="addr" autocomplete="off" spellcheck="false">
+</div>
+<div class="scroller" id="scroller"><div class="wrap" id="view"></div></div>
+<div id="frames"></div>
+`;
+
+/* ---------- icons (inline SVG, no emojis) ---------- */
+const I = {
+  drop: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  gamepad: '<path d="M6 11h4M8 9v4M15 12h.01M18 10h.01"/><path d="M17.32 5H6.68a4 4 0 0 0-3.98 3.59C2.6 9.42 2 14.46 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.41-1.41A2 2 0 0 1 9.83 16h4.34a2 2 0 0 1 1.41.59L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.55-.6-6.58-.69-7.26A4 4 0 0 0 17.32 5z"/>',
+  sparkles: '<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.13-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.13a.5.5 0 0 1 .96 0L14.06 8.5a2 2 0 0 0 1.44 1.44l6.13 1.58a.5.5 0 0 1 0 .96l-6.13 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.13a.5.5 0 0 1-.96 0z"/>',
+  film: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18M3 7.5h4M3 12h18M3 16.5h4M17 3v18M17 7.5h4M17 16.5h4"/>',
+  music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  chat: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/>',
+  weather: '<path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41M15.95 12.65a4 4 0 0 0-5.93-4.13M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z"/>',
+  grid: '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+  plus: '<path d="M5 12h14M12 5v14"/>',
+  arrowLeft: '<path d="m12 19-7-7 7-7M19 12H5"/>',
+  arrowRight: '<path d="M5 12h14M12 5l7 7-7 7"/>',
+  refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  bookmark: '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
+  shuffle: '<path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22M18 2l4 4-4 4M2 6h1.9c1.5 0 2.9.9 3.6 2.2M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8M18 14l4 4-4 4"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/>',
+  alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3zM12 9v4M12 17h.01"/>'
+};
+function ico(n, s = 20) {
+  const d = document.createElement("span");
+  d.className = "svg";
+  d.innerHTML = '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + I[n] + "</svg>";
+  return d;
+}
+// site icon: fetched favicon, falls back to a globe icon
+function fav(u, size) {
+  const img = new Image();
+  img.alt = "";
+  img.loading = "lazy";
+  img.referrerPolicy = "no-referrer";
+  img.src = "https://www.google.com/s2/favicons?domain=" + new URL(u).hostname + "&sz=128";
+  img.onerror = () => img.replaceWith(ico("globe", size));
+  return img;
+}
+
+/* ---------- data: "Name|domain/path" ---------- */
+const P = (s) => s.split(",").map((x) => { const [n, u] = x.trim().split("|"); return { n, u: "https://" + u }; });
+
+const pages = {
+  g: { title: "Games", icon: "gamepad", sites: P(`Roblox|www.roblox.com, Poki|poki.com, CrazyGames|www.crazygames.com, Miniclip|www.miniclip.com, Y8|www.y8.com, Itch.io|itch.io, Steam|store.steampowered.com, Epic Games|store.epicgames.com, Chess.com|www.chess.com, Lichess|lichess.org, Slither.io|slither.io, Krunker|krunker.io, Agar.io|agar.io, Shell Shockers|shellshock.io, 2048|play2048.co, Cool Math Games|www.coolmathgames.com, Armor Games|armorgames.com, Newgrounds|www.newgrounds.com, GeoGuessr|www.geoguessr.com, Wordle|www.nytimes.com/games/wordle, Little Alchemy 2|littlealchemy2.com, Skribbl.io|skribbl.io, Minecraft|www.minecraft.net, Friv|www.friv.com`) },
+  ai: { title: "AI", icon: "sparkles", sites: P(`ChatGPT|chatgpt.com, Claude|claude.ai, Gemini|gemini.google.com, Perplexity|www.perplexity.ai, Copilot|copilot.microsoft.com, Grok|grok.com, DeepSeek|chat.deepseek.com, Le Chat|chat.mistral.ai, Character.AI|character.ai, Midjourney|www.midjourney.com, Hugging Face|huggingface.co, Poe|poe.com`) },
+  m: { title: "Movies", icon: "film", sites: P(`YouTube|www.youtube.com, Netflix|www.netflix.com, Tubi|tubitv.com, Pluto TV|pluto.tv, Disney+|www.disneyplus.com, Max|www.max.com, Prime Video|www.primevideo.com, Hulu|www.hulu.com, Crunchyroll|www.crunchyroll.com, IMDb|www.imdb.com, Twitch|www.twitch.tv, Vimeo|vimeo.com`) },
+  music: { title: "Music", icon: "music", sites: P(`YouTube Music|music.youtube.com, Spotify|open.spotify.com, SoundCloud|soundcloud.com, Pandora|www.pandora.com, Apple Music|music.apple.com, Deezer|www.deezer.com, Tidal|tidal.com, Bandcamp|bandcamp.com, Last.fm|www.last.fm, Genius|genius.com, Audiomack|audiomack.com`) },
+  c: { title: "Chat", icon: "chat", sites: P(`Discord|discord.com/app, Messenger|www.messenger.com, WhatsApp|web.whatsapp.com, Telegram|web.telegram.org, Slack|app.slack.com, Reddit|www.reddit.com, Google Chat|chat.google.com, Teams|teams.microsoft.com`) },
+  w: { title: "Weather", icon: "weather", sites: P(`Weather.com|weather.com, AccuWeather|www.accuweather.com, Windy|www.windy.com, Weather.gov|www.weather.gov, Ventusky|www.ventusky.com, Wunderground|www.wunderground.com`) },
+  apps: { title: "All Apps", icon: "grid", all: true }
+};
+
+// Game sources for the dropdown. Each game gets a "src" tag.
+// Starter data only: the tags below are assigned automatically as placeholders.
+// Replace with your real lists, e.g. { n: "Slope", u: "https://...", src: "Lumin" }
+const SOURCES = ["Lumin", "Cloud", "Emulator", "Arcade", "CKV", "Seraph", "Truffled", "UGS", "GN Math"];
+pages.g.sites.forEach((g, i) => (g.src = SOURCES[i % SOURCES.length]));
+
+const alias = { games: "g", game: "g", movies: "m", movie: "m", chat: "c", weather: "w", home: "home" };
+
+/* ---------- state ---------- */
+let bookmarks = [];
+try { bookmarks = JSON.parse(localStorage.getItem("milky-bm") || "[]"); } catch (e) {}
+const saveBm = () => { try { localStorage.setItem("milky-bm", JSON.stringify(bookmarks)); } catch (e) {} };
+
+let uid = 0;
+let tabs = [{ id: ++uid, route: "home" }];
+let active = tabs[0].id;
+
+const $ = (s) => document.querySelector(s);
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+/* ---------- url helpers ---------- */
+// Anything typed that isn't a URL or a domain gets sent to this search engine.
+const SEARCH = "https://search.brave.com/search?q=";
+
+function toUrl(v) {
+  v = (v || "").trim();
+  if (/^https?:\/\//i.test(v)) return v;                          // full URL
+  if (/^(localhost|[\w-]+(\.[\w-]+)+)(:\d+)?([\/?#]\S*)?$/i.test(v))
+    return "https://" + v;                                         // looks like a domain
+  return SEARCH + encodeURIComponent(v);                           // otherwise search
+}
+
+function hostOf(u) {
+  try { return new URL(u).hostname.replace(/^www\./, ""); }
+  catch (e) { return u; }
+}
+
+// Used by site cards, bookmarks, game tiles and the Random button.
+// Opens in the current tab if it's a fresh home tab, otherwise a new tab.
+function openTarget(u) { openSite(u, true); }
+
+/* ---------- proxy: UI is hosted on GitHub Pages; InvisiProxy runs on your Pi ---------- */
+/*
+  PROXY_SERVER is the origin where your InvisiProxy server is running.
+  The /s page on that server reads ?url=<encoded-target-url> and loads it through Scramjet.
+
+  The UI never touches iframe.contentWindow/contentDocument directly
+  (different origins), so back/forward/reload are sent with postMessage.
+*/
+const PROXY_SERVER = "https://minecraft.perch-dace.ts.net/";
+const PROXY_PATH = "/s";
+const PROXY_ORIGIN = new URL(PROXY_SERVER).origin;
+
+function proxyUrl(target) {
+  return PROXY_ORIGIN +
+    PROXY_PATH +
+    "?url=" + encodeURIComponent(target) +
+    "&cache=1957180336";
+}
+
+function createFrame(t) {
+  const f = document.createElement("iframe");
+  f.allow = "fullscreen; autoplay; clipboard-write; encrypted-media";
+  f.referrerPolicy = "no-referrer";
+  t.frame = f;
+  $("#frames").append(f);
+  f.src = proxyUrl(t.url);
+}
+
+function openSite(v, reuse) {
+  v = (v || "").trim();
+  if (!v) return;
+
+  const url = toUrl(v);
+  let t = tabs.find((x) => x.id === active);
+
+  if (!(reuse && t.route === "home")) {
+    t = { id: ++uid };
+    tabs.push(t);
+    active = t.id;
+  }
+
+  t.route = "site";
+  t.url = url;
+  t.title = hostOf(url);
+
+  createFrame(t);
+  render();
+}
+
+function navSite(t, v) {
+  const url = toUrl(v);
+  t.url = url;
+  t.title = hostOf(url);
+
+  if (t.frame) t.frame.src = proxyUrl(url);
+  render();
+}
+
+function navAct(kind) {
+  const t = tabs.find((x) => x.id === active);
+  if (!t || t.route !== "site" || !t.frame) return;
+
+  if (kind === "reload") {
+    t.frame.src = proxyUrl(t.url);
+    return;
+  }
+
+  // The /s page on the proxy server listens for this message:
+  //   { source: "milky", type: "navigation", command: "back" | "forward" }
+  try {
+    t.frame.contentWindow.postMessage(
+      { source: "milky", type: "navigation", command: kind },
+      PROXY_ORIGIN
+    );
+  } catch (e) {}
+}
+
+[["back", "arrowLeft"], ["forward", "arrowRight"], ["reload", "refresh"]].forEach(([k, ic]) => {
+  const b = $("#nb-" + k);
+  b.append(ico(ic, 16));
+  b.onclick = () => navAct(k);
+});
+
+/* ---------- navigation ---------- */
+function resolve(v) {
+  const m = v.trim().match(/^milky:\/\/(.*)$/i);
+  if (!m) return null;
+  const r = m[1].replace(/\/+$/, "").toLowerCase() || "home";
+  return alias[r] || r;
+}
+function go(route, newTab) {
+  if (newTab) {
+    const ex = route !== "home" && tabs.find((t) => t.route === route);
+    if (ex) active = ex.id;
+    else { const t = { id: ++uid, route }; tabs.push(t); active = t.id; }
+  } else {
+    const t = tabs.find((x) => x.id === active);
+    if (t.frame) { t.frame.remove(); t.frame = null; }
+    t.route = route;
+  }
+  render();
+}
+function submit(v) {
+  const r = resolve(v);
+  if (r) { go(r, false); return; }
+  const t = tabs.find((x) => x.id === active);
+  if (t.route === "site") navSite(t, v);
+  else openSite(v, true);
+}
+function closeTab(id) {
+  const i = tabs.findIndex((t) => t.id === id);
+  if (tabs[i].frame) tabs[i].frame.remove();
+  tabs.splice(i, 1);
+  if (!tabs.length) tabs.push({ id: ++uid, route: "home" });
+  if (active === id) active = tabs[Math.max(0, i - 1)].id;
+  render();
+}
+
+/* ---------- render ---------- */
+const tabInfo = (t) => (t.route === "site" ? { title: t.title, icon: "globe" } : t.route === "home" ? { title: "Milky", icon: "drop" } : pages[t.route] || { title: "Not found", icon: "alert" });
+
+function renderTabs() {
+  const bar = $("#tabbar");
+  bar.innerHTML = "";
+  tabs.forEach((t) => {
+    const info = tabInfo(t);
+    const b = el("div", "tab" + (t.id === active ? " active" : ""));
+    b.append(ico(info.icon, 15), el("span", "t", info.title));
+    const x = el("button", "x");
+    x.title = "Close tab";
+    x.append(ico("x", 13));
+    x.onclick = (e) => { e.stopPropagation(); closeTab(t.id); };
+    b.append(x);
+    b.onclick = () => { active = t.id; render(); };
+    bar.append(b);
+  });
+  const n = el("button", "newtab");
+  n.title = "New tab";
+  n.append(ico("plus", 18));
+  n.onclick = () => go("home", true);
+  bar.append(n);
+}
+
+function tile(icon, label, fn, cls) {
+  const b = el("button", "tile " + (cls || ""));
+  const c = el("div", "ic");
+  c.append(ico(icon, 26));
+  b.append(c, el("span", "l", label));
+  b.onclick = fn;
+  return b;
+}
+
+function card(s) {
+  const b = el("button", "card");
+  const d = el("div");
+  d.append(el("b", "", s.n), el("small", "", s.u.replace("https://", "")));
+  b.append(fav(s.u, 28), d);
+  b.onclick = () => openTarget(s.u);
+  return b;
+}
+
+/* ---------- splash texts ---------- */
+const SPLASHES = [
+  "Also try Cherri", "Got milk?", "Don't cry over spilled milk", "Udderly unblocked",
+  "Best before never", "Fresh from the fridge", "Now with 100% more milk", "Proxy not included",
+  "Cereal not included", "Skim the web", "Lactose tolerant", "Now 2% funnier",
+  "Shaken, not stirred", "Moo.", "Cool as a cow", "Straight from the carton"
+];
+const SPLASH = SPLASHES[Math.floor(Math.random() * SPLASHES.length)]; // picked once per page load
+
+function renderHome(v) {
+  const hero = el("section", "hero");
+  const logo = el("div", "logo");
+  logo.append(ico("drop", 32));
+  const splash = el("p", "", SPLASH);
+  hero.append(logo, el("h1", "", "Milky"), splash);
+
+  const s = el("input", "search");
+  s.placeholder = "Search or enter a URL";
+  s.autocomplete = "off";
+  s.onkeydown = (e) => { if (e.key === "Enter") submit(s.value); };
+  hero.append(s);
+
+  const row = el("div", "tiles");
+  ["g", "ai", "m", "music", "c", "w", "apps"].forEach((k) => row.append(tile(pages[k].icon, pages[k].title, () => go(k, true))));
+  hero.append(row);
+
+  const bm = el("div", "tiles");
+  bookmarks.forEach((b, i) => {
+    const t = tile("bookmark", b.name, () => openTarget(b.url));
+    t.title = "Right-click to remove";
+    t.oncontextmenu = (e) => { e.preventDefault(); if (confirm("Remove bookmark " + b.name + "?")) { bookmarks.splice(i, 1); saveBm(); render(); } };
+    bm.append(t);
+  });
+  bm.append(tile("plus", "Add bookmark", () => {
+    const url = prompt("Bookmark URL:");
+    if (!url || !url.trim()) return;
+    const name = prompt("Name:", url.replace(/^https?:\/\//i, "").split("/")[0]) || url;
+    bookmarks.push({ name: name.trim(), url: toUrl(url) });
+    saveBm();
+    render();
+  }, "add"));
+  hero.append(bm);
+
+  v.append(hero);
+  setTimeout(() => s.focus(), 0);
+}
+
+function renderGames(box) {
+  const bar = el("div", "bar");
+  const q = el("input", "gin");
+  q.placeholder = "Search games";
+  q.autocomplete = "off";
+  const sel = el("select", "gsel");
+  ["All sources"].concat(SOURCES).forEach((n, i) => { const o = el("option", "", n); o.value = i ? n : ""; sel.append(o); });
+  const rnd = el("button", "rnd");
+  rnd.append(ico("shuffle", 18), el("span", "", "Random"));
+  bar.append(q, sel, rnd);
+
+  const grid = el("div", "grid games");
+  const count = el("p", "sub");
+  let list = [];
+
+  function draw() {
+    const t = q.value.trim().toLowerCase();
+    list = pages.g.sites.filter((g) => (!sel.value || g.src === sel.value) && g.n.toLowerCase().includes(t));
+    grid.innerHTML = "";
+    count.textContent = list.length + " games";
+    if (!list.length) { grid.className = "grid"; grid.append(el("div", "empty", "No games found.")); return; }
+    grid.className = "grid games";
+    list.forEach((g) => {
+      const b = el("button", "gt");
+      b.append(fav(g.u, 40), el("div", "nm", g.n));
+      b.onclick = () => openTarget(g.u);
+      grid.append(b);
+    });
+  }
+  q.oninput = draw;
+  sel.onchange = draw;
+  rnd.onclick = () => { if (list.length) openTarget(list[Math.floor(Math.random() * list.length)].u); };
+
+  box.append(bar, count, grid);
+  draw();
+}
+
+function renderPage(v, route) {
+  const p = pages[route];
+  const box = el("section", "page");
+  if (!p) {
+    box.append(el("h2", "", "Page not found"), el("p", "sub", "milky://" + route + " doesn't exist. Try milky://g, ai, m, music, c, w or apps."));
+    v.append(box);
+    return;
+  }
+  const h = el("h2");
+  h.append(ico(p.icon, 28), el("span", "", p.title));
+  box.append(h);
+  if (route === "g") renderGames(box);
+  else if (p.all) {
+    box.append(el("p", "sub", "Every app in one place"));
+    Object.keys(pages).filter((k) => pages[k].sites).forEach((k) => {
+      box.append(el("div", "sect", pages[k].title));
+      const g = el("div", "grid");
+      pages[k].sites.forEach((s) => g.append(card(s)));
+      box.append(g);
+    });
+  } else {
+    box.append(el("p", "sub", p.sites.length + " sites"));
+    const g = el("div", "grid");
+    p.sites.forEach((s) => g.append(card(s)));
+    box.append(g);
+  }
+  v.append(box);
+}
+
+function render() {
+  renderTabs();
+  const cur = tabs.find((t) => t.id === active);
+  const route = cur.route;
+  document.body.classList.toggle("site", route === "site");
+  ["back", "forward", "reload"].forEach((k) => { $("#nb-" + k).disabled = route !== "site"; });
+  tabs.forEach((t) => { if (t.frame) t.frame.classList.toggle("on", t.id === active); });
+  $("#addr").value = route === "site" ? cur.url : "milky://" + route;
+  const v = $("#view");
+  v.innerHTML = "";
+  if (route === "site") return;
+  if (route === "home") renderHome(v);
+  else renderPage(v, route);
+}
+
+$("#addr").addEventListener("keydown", (e) => { if (e.key === "Enter") submit(e.target.value); });
+$("#addr").addEventListener("focus", (e) => e.target.select());
+
+render();
+})();
