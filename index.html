@@ -178,121 +178,96 @@ let active = tabs[0].id;
 const $ = (s) => document.querySelector(s);
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
-/* ---------- proxy: each site tab is an iframe of InvisiProxy's /s page ---------- */
-const FRAME_KEY = "net-time-frame-url";
+/* ---------- proxy: UI may be hosted on jsDelivr; InvisiProxy stays on your server ---------- */
+/*
+  Set PROXY_SERVER to the origin where your InvisiProxy server is running.
 
-function toUrl(v) {
-  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(v)) return v;
-  if (!/\s/.test(v) && /^[^\s\/]+\.[a-z]{2,}([\/:?#].*)?$/i.test(v)) return "https://" + v;
-  return "https://duckduckgo.com/?q=" + encodeURIComponent(v);
-}
-function hostOf(u) {
-  try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u; }
+  Your /s route needs to accept:
+    /s?url=<encoded-target-url>
+
+  and make Scramjet load that target.
+
+  The UI intentionally does not access iframe.contentWindow/contentDocument,
+  because jsDelivr and your proxy server are different origins.
+*/
+const PROXY_SERVER = "https://minecraft.perch-dace.ts.net/";
+const PROXY_PATH = "/s";
+
+function proxyUrl(target) {
+  return PROXY_SERVER.replace(/\/+$/, "") +
+    PROXY_PATH +
+    "?url=" + encodeURIComponent(target) +
+    "&cache=1957180336";
 }
 
 function createFrame(t) {
-  try { localStorage.removeItem(FRAME_KEY); } catch (e) {}
   const f = document.createElement("iframe");
   f.allow = "fullscreen; autoplay; clipboard-write; encrypted-media";
+  f.referrerPolicy = "no-referrer";
   t.frame = f;
   $("#frames").append(f);
-  f.addEventListener("load", () => boot(t), { once: true });
-  f.src = "/s?cache=1957180336";
-}
-
-// wait for Scramjet inside the iframe, then tell it which site to load
-function boot(t) {
-  const f = t.frame;
-  if (!f) return;
-  let n = 0;
-  const timer = setInterval(() => {
-    n++;
-    try {
-      const b = f.contentWindow.$invisiScramjet;
-      if (b && b.ready && b.frame && typeof b.frame.go === "function") {
-        clearInterval(timer);
-        // remove InvisiProxy's ghost logo (it links back to their home page)
-        const d0 = f.contentDocument;
-        const st = d0.createElement("style");
-        st.textContent = ".logo{display:none!important}";
-        d0.head.append(st);
-        const lg = d0.querySelector(".omnibar .logo");
-        if (lg) lg.remove();
-        b.frame.go(t.url);
-        // hide InvisiProxy's own top bar (its own toggle button), Milky has tabs
-        const d = f.contentDocument, bar = d.getElementById("pr-sj"), tg = d.getElementById("omnibar-toggle");
-        if (tg && bar && !bar.classList.contains("omnibar-hidden")) tg.click();
-      } else if (n > 100) { clearInterval(timer); alert("Proxy didn't start for " + t.url); }
-    } catch (e) { clearInterval(timer); }
-  }, 200);
+  f.src = proxyUrl(t.url);
 }
 
 function openSite(v, reuse) {
   v = (v || "").trim();
   if (!v) return;
+
   const url = toUrl(v);
   let t = tabs.find((x) => x.id === active);
-  if (!(reuse && t.route === "home")) { t = { id: ++uid }; tabs.push(t); active = t.id; }
+
+  if (!(reuse && t.route === "home")) {
+    t = { id: ++uid };
+    tabs.push(t);
+    active = t.id;
+  }
+
   t.route = "site";
   t.url = url;
   t.title = hostOf(url);
+
   createFrame(t);
   render();
 }
 
 function navSite(t, v) {
-  t.url = toUrl(v);
-  t.title = hostOf(t.url);
-  try {
-    const b = t.frame.contentWindow.$invisiScramjet;
-    if (b && b.ready && b.frame) b.frame.go(t.url);
-  } catch (e) {}
+  const url = toUrl(v);
+  t.url = url;
+  t.title = hostOf(url);
+
+  if (t.frame) t.frame.src = proxyUrl(url);
   render();
 }
 
-function sjOf(t) {
-  try { const b = t.frame.contentWindow.$invisiScramjet; return b && b.ready && b.frame ? b : null; } catch (e) { return null; }
-}
-
-// back / forward / reload act on the proxied page in the active tab
 function navAct(kind) {
   const t = tabs.find((x) => x.id === active);
-  if (!t || t.route !== "site") return;
-  const b = sjOf(t);
-  if (!b) return;
-  const w = t.frame.contentWindow;
+  if (!t || t.route !== "site" || !t.frame) return;
+
+  if (kind === "reload") {
+    t.frame.src = proxyUrl(t.url);
+    return;
+  }
+
+  /*
+    Optional protocol for your InvisiProxy /s page:
+    it can listen for:
+      { source: "milky", type: "navigation", command: "back"|"forward" }
+
+    If you add that listener to /s, back/forward will work too.
+  */
   try {
-    if (typeof b.frame[kind] === "function") b.frame[kind]();
-    else if (kind === "reload") w.document.getElementById("frame").contentWindow.location.reload();
-    else w.history[kind === "back" ? "back" : "forward"]();
+    t.frame.contentWindow.postMessage(
+      { source: "milky", type: "navigation", command: kind },
+      PROXY_SERVER
+    );
   } catch (e) {}
 }
+
 [["back", "arrowLeft"], ["forward", "arrowRight"], ["reload", "refresh"]].forEach(([k, ic]) => {
   const b = $("#nb-" + k);
   b.append(ico(ic, 16));
   b.onclick = () => navAct(k);
 });
-
-// keep the address bar and tab title in sync with the page you're actually on
-setInterval(() => {
-  const t = tabs.find((x) => x.id === active);
-  if (!t || t.route !== "site" || !t.frame) return;
-  const b = sjOf(t);
-  if (!b) return;
-  let changed = false;
-  try {
-    let u = b.frame.url;
-    u = u && u.href ? u.href : typeof u === "string" ? u : "";
-    if (/^https?:\/\//i.test(u) && !u.startsWith(location.origin) && u !== t.url) { t.url = u; changed = true; }
-    const inner = t.frame.contentDocument.getElementById("frame");
-    const ttl = inner && inner.contentDocument && inner.contentDocument.title;
-    const name = ttl || hostOf(t.url);
-    if (name !== t.title) { t.title = name; changed = true; }
-  } catch (e) {}
-  if (changed) { renderTabs(); if (document.activeElement !== $("#addr")) $("#addr").value = t.url; }
-}, 700);
-
-function openTarget(v) { openSite(v, false); }
 
 /* ---------- navigation ---------- */
 function resolve(v) {
