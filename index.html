@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Milky</title>
+<link rel="icon" href="data:,">
 
 <style>
 :root{color-scheme:dark;--p:rgba(27,31,38,.6);--p2:rgba(21,24,29,.55);--line:rgba(255,255,255,.1);--text:#f5f7fa;--muted:#aab2bd}
@@ -92,9 +93,6 @@ body.site #frames{display:block}
 </style>
 </head>
 <body>
-<span style="display:none" data-fact="Writing App">Whether you're jotting down quick notes or composing longer documents, this text editor has you covered. You can save your work, export it in different formats, and even collaborate with others in real-time.</span>
-
-
 <div class="bg"><i></i><i></i><i></i><i></i><i></i></div>
 <div class="tabbar" id="tabbar"></div>
 <div class="addrbar">
@@ -104,7 +102,6 @@ body.site #frames{display:block}
   <input id="addr" class="addr" autocomplete="off" spellcheck="false">
 </div>
 <div class="scroller" id="scroller"><div class="wrap" id="view"></div></div>
-<span style="display:none" data-fact="Notepad">Feel free to explore the features of this text editor. You can create bullet points, numbered lists, and even code snippets. The editor is designed to be user-friendly and intuitive, making it easy for anyone to use.</span>
 <div id="frames"></div>
 
 <script>
@@ -178,23 +175,41 @@ let active = tabs[0].id;
 const $ = (s) => document.querySelector(s);
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
-/* ---------- proxy: UI may be hosted on jsDelivr; InvisiProxy stays on your server ---------- */
+/* ---------- url helpers ---------- */
+// Anything typed that isn't a URL or a domain gets sent to this search engine.
+const SEARCH = "https://search.brave.com/search?q=";
+
+function toUrl(v) {
+  v = (v || "").trim();
+  if (/^https?:\/\//i.test(v)) return v;                          // full URL
+  if (/^(localhost|[\w-]+(\.[\w-]+)+)(:\d+)?([\/?#]\S*)?$/i.test(v))
+    return "https://" + v;                                         // looks like a domain
+  return SEARCH + encodeURIComponent(v);                           // otherwise search
+}
+
+function hostOf(u) {
+  try { return new URL(u).hostname.replace(/^www\./, ""); }
+  catch (e) { return u; }
+}
+
+// Used by site cards, bookmarks, game tiles and the Random button.
+// Opens in the current tab if it's a fresh home tab, otherwise a new tab.
+function openTarget(u) { openSite(u, true); }
+
+/* ---------- proxy: UI is hosted on GitHub Pages; InvisiProxy runs on your Pi ---------- */
 /*
-  Set PROXY_SERVER to the origin where your InvisiProxy server is running.
+  PROXY_SERVER is the origin where your InvisiProxy server is running.
+  The /s page on that server reads ?url=<encoded-target-url> and loads it through Scramjet.
 
-  Your /s route needs to accept:
-    /s?url=<encoded-target-url>
-
-  and make Scramjet load that target.
-
-  The UI intentionally does not access iframe.contentWindow/contentDocument,
-  because jsDelivr and your proxy server are different origins.
+  The UI never touches iframe.contentWindow/contentDocument directly
+  (different origins), so back/forward/reload are sent with postMessage.
 */
 const PROXY_SERVER = "https://minecraft.perch-dace.ts.net/";
 const PROXY_PATH = "/s";
+const PROXY_ORIGIN = new URL(PROXY_SERVER).origin;
 
 function proxyUrl(target) {
-  return PROXY_SERVER.replace(/\/+$/, "") +
+  return PROXY_ORIGIN +
     PROXY_PATH +
     "?url=" + encodeURIComponent(target) +
     "&cache=1957180336";
@@ -248,17 +263,12 @@ function navAct(kind) {
     return;
   }
 
-  /*
-    Optional protocol for your InvisiProxy /s page:
-    it can listen for:
-      { source: "milky", type: "navigation", command: "back"|"forward" }
-
-    If you add that listener to /s, back/forward will work too.
-  */
+  // The /s page on the proxy server listens for this message:
+  //   { source: "milky", type: "navigation", command: "back" | "forward" }
   try {
     t.frame.contentWindow.postMessage(
       { source: "milky", type: "navigation", command: kind },
-      PROXY_SERVER
+      PROXY_ORIGIN
     );
   } catch (e) {}
 }
@@ -384,7 +394,7 @@ function renderHome(v) {
     const url = prompt("Bookmark URL:");
     if (!url || !url.trim()) return;
     const name = prompt("Name:", url.replace(/^https?:\/\//i, "").split("/")[0]) || url;
-    bookmarks.push({ name: name.trim(), url: url.trim() });
+    bookmarks.push({ name: name.trim(), url: toUrl(url) });
     saveBm();
     render();
   }, "add"));
