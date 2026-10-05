@@ -205,7 +205,7 @@ function openTarget(u) { openSite(u, true); }
 const BASE = new URL(".", location.href).pathname;
 const PREFIX = BASE + "p/";                                   // virtual addresses the service worker answers
 const WISP_URL = "wss://minecraft.perch-dace.ts.net/cron/";   // <-- your Pi's Wisp endpoint (see instructions)
-const TRANSPORT = "epoxy";                                    // "epoxy" or "libcurl"
+const TRANSPORT = "libcurl";                                    // "epoxy" or "libcurl"
 const TRANSPORT_FILES = { epoxy: "epoxy/index.mjs", libcurl: "libcurl/index.mjs" };
 
 let toastEl = null, toastTimer = 0;
