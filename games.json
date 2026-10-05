@@ -1,0 +1,104 @@
+[
+ {
+  "n": "2048",
+  "u": "https://gabrielecirulli.github.io/2048/",
+  "src": "Open source",
+  "direct": true
+ },
+ {
+  "n": "Clumsy Bird",
+  "u": "https://ellisonleao.github.io/clumsy-bird/",
+  "src": "Open source",
+  "direct": true
+ },
+ {
+  "n": "Hextris",
+  "u": "https://hextris.io/",
+  "src": "Open source"
+ },
+ {
+  "n": "A Dark Room",
+  "u": "https://adarkroom.doublespeakgames.com/",
+  "src": "Open source"
+ },
+ {
+  "n": "Lichess",
+  "u": "https://lichess.org/",
+  "src": "Open source"
+ },
+ {
+  "n": "Monkeytype",
+  "u": "https://monkeytype.com/",
+  "src": "Open source"
+ },
+ {
+  "n": "Sandboxels",
+  "u": "https://sandboxels.r74n.com/",
+  "src": "Free to play"
+ },
+ {
+  "n": "Cookie Clicker",
+  "u": "https://orteil.dashnet.org/cookieclicker/",
+  "src": "Free to play"
+ },
+ {
+  "n": "Universal Paperclips",
+  "u": "https://www.decisionproblem.com/paperclips/",
+  "src": "Free to play"
+ },
+ {
+  "n": "Wordle",
+  "u": "https://www.nytimes.com/games/wordle/index.html",
+  "src": "Free to play"
+ },
+ {
+  "n": "TETR.IO",
+  "u": "https://tetr.io/",
+  "src": "Free to play"
+ },
+ {
+  "n": "Infinite Craft",
+  "u": "https://neal.fun/infinite-craft/",
+  "src": "Free to play"
+ },
+ {
+  "n": "Quick, Draw!",
+  "u": "https://quickdraw.withgoogle.com/",
+  "src": "Free to play"
+ },
+ {
+  "n": "Akinator",
+  "u": "https://en.akinator.com/",
+  "src": "Free to play"
+ },
+ {
+  "n": "The Wiki Game",
+  "u": "https://www.thewikigame.com/",
+  "src": "Free to play"
+ },
+ {
+  "n": "Minesweeper Online",
+  "u": "https://minesweeper.online/",
+  "src": "Free to play"
+ },
+ {
+  "n": "Sudoku",
+  "u": "https://sudoku.com/",
+  "src": "Free to play"
+ },
+ {
+  "n": "js13kGames",
+  "u": "https://js13kgames.com/",
+  "src": "Game libraries"
+ },
+ {
+  "n": "itch.io free HTML5 games",
+  "u": "https://itch.io/games/html5/free",
+  "src": "Game libraries"
+ },
+ {
+  "n": "Google Doodle games",
+  "u": "https://doodles.google/",
+  "src": "Game libraries"
+ }
+]
